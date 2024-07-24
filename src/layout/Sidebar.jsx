@@ -19,6 +19,11 @@ const menuItems = [
     key: "/users",
     icon: <UserOutlined />,
   },
+  {
+    label: "Enquiries",
+    key: "/enquiries",
+    icon: <UserOutlined />,
+  },
 ];
 
 const SideBar = () => {

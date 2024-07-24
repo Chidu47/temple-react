@@ -44,6 +44,11 @@ export const protectedRoutes = [
     exact: true,
     element: lazy(() => import("./pages/users")),
   },
+  {
+    path: "/enquiries",
+    exact: true,
+    element: lazy(() => import("./pages/enquiry")),
+  },
 
   //users
 ];

@@ -31,7 +31,7 @@ export const campaignApi = createApi({
     }),
     updateCampaign: builder.mutation({
       query: (body) => ({
-        url: "donation_campaign/add",
+        url: "donation_campaign/update",
         method: "POST",
         body,
       }),
@@ -59,6 +59,40 @@ export const campaignApi = createApi({
       }),
       providesTags: ["users"],
     }),
+    getAllSubCampaign: builder.query({
+      query: () => ({
+        url: "subDonation/list",
+      }),
+      providesTags: ["subCampaign"],
+    }),
+    getSubCampaign: builder.query({
+      query: (id) => ({
+        url: `get-by-id/${id}`,
+      }),
+      providesTags: ["subCampaign"],
+    }),
+    createSubCampaign: builder.mutation({
+      query: (body) => ({
+        url: "subDonation/create",
+        method: "POST",
+        body: body,
+      }),
+      invalidatesTags: ["campaign"],
+    }),
+    updateSubCampaign: builder.mutation({
+      query: (body) => ({
+        url: "subDonation/add",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["campaign"],
+    }),
+    getAllEnquiries: builder.query({
+      query: () => ({
+        url: "enquiry/list",
+      }),
+      providesTags: ["campaign"],
+    }),
   }),
 });
 
@@ -70,4 +104,9 @@ export const {
   useSentOtpMutation,
   useVerifyOtpMutation,
   useGetAllUserQuery,
+  useGetAllSubCampaignQuery,
+  useGetSubCampaignQuery,
+  useCreateSubCampaignMutation,
+  useUpdateSubCampaignMutation,
+  useGetAllEnquiriesQuery,
 } = campaignApi;

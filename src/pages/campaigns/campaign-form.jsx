@@ -1,5 +1,4 @@
 import {
-  Button,
   Checkbox,
   CircularProgress,
   FormControlLabel,
@@ -17,12 +16,14 @@ import dayjs from "dayjs";
 
 import {
   useCreateCampaignMutation,
+  useCreateSubCampaignMutation,
   useGetAllCampaignQuery,
   useGetCampaignQuery,
   useUpdateCampaignMutation,
 } from "../../redux/services/campaignApi";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  Button,
   Card,
   DatePicker,
   Flex,
@@ -32,9 +33,12 @@ import {
   Row,
   Table,
   Typography,
+  Upload,
 } from "antd";
 import PrimaryWrapper from "../../components/PrimaryWrapper";
-import { useCreateSubCampaignMutation } from "../../redux/services/subCampaignApi";
+
+import { UploadOutlined } from "@ant-design/icons";
+import moment from "moment";
 
 const CampaignForm = () => {
   const { campaignId } = useParams();
@@ -73,7 +77,6 @@ const CampaignForm = () => {
       temple_name: Yup.string().required("Required"),
       description: Yup.string().required("Required"),
       start_date: Yup.string().required("Required"),
-      end_date: Yup.string().required("Required"),
     }),
 
     onSubmit: async (values) => {
@@ -99,7 +102,7 @@ const CampaignForm = () => {
         <div className="pb-10" sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <TextField
+              {/* <TextField
                 size="medium"
                 type="file"
                 autoFocus
@@ -107,7 +110,10 @@ const CampaignForm = () => {
                 name="featured_image_base_url"
                 label="Select Image"
                 fullWidth
-                value={form.values?.featured_image_base_url?.fileName}
+                // value={
+                //   form.values?.featured_image_base_url?.fileName ||
+                //   form.values?.featured_image_base_url
+                // }
                 error={form.errors?.featured_image_base_url}
                 onChange={(e) =>
                   form.setFieldValue(
@@ -115,15 +121,46 @@ const CampaignForm = () => {
                     e.target.files?.[0]
                   )
                 }
-              />
+              /> */}
+              <Upload
+                multiple={false}
+                onChange={(e) => {
+                  console.log(e.file);
+                  form.setFieldValue(
+                    "featured_image_base_url",
+                    e.file.originFileObj
+                  );
+                }}
+                // fileList={false}
+                showUploadList={false}
+              >
+                <Button variant="outlined" icon={<UploadOutlined />}>
+                  Click to Upload
+                </Button>
+              </Upload>
             </Grid>
             <Grid item xs={6}>
-              <Image
-                src={form.values?.featured_image_base_url}
-                height={80}
-                width={100}
-                style={{ objectFit: "contain" }}
-              />
+              {typeof form.values?.featured_image_base_url === "string" && (
+                <Image
+                  src={form.values?.featured_image_base_url}
+                  height={80}
+                  width={100}
+                  style={{ objectFit: "contain" }}
+                />
+              )}
+              {typeof form.values?.featured_image_base_url === "object" && (
+                <Image
+                  src={
+                    form.values?.featured_image_base_url &&
+                    window.URL.createObjectURL(
+                      form.values.featured_image_base_url
+                    )
+                  }
+                  height={80}
+                  width={100}
+                  style={{ objectFit: "contain" }}
+                />
+              )}
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -359,14 +396,19 @@ const CampaignForm = () => {
           </Stack>
         </div>
       </Card>
-      {campaignId && <SubCampaignTable base64Image={base64Image} />}
+      {campaignId && (
+        <SubCampaignTable
+          base64Image={base64Image}
+          data={singleCampaign?.data?.subdonations}
+        />
+      )}
     </PrimaryWrapper>
   );
 };
 
 export default CampaignForm;
 
-const SubCampaignTable = ({ base64Image }) => {
+const SubCampaignTable = ({ base64Image, data }) => {
   const [subCampaignId, setSubCampaignId] = useState(null);
   const [subCampaignModel, setSubCampaignModel] = useState(null);
 
@@ -375,7 +417,7 @@ const SubCampaignTable = ({ base64Image }) => {
       dataIndex: "id",
       title: "ID",
       width: 40,
-      // render: (record, item, index) => index + 1,
+      render: (record, item, index) => index + 1,
     },
     {
       dataIndex: "name",
@@ -402,8 +444,6 @@ const SubCampaignTable = ({ base64Image }) => {
     },
   ];
 
-  const data = [];
-
   return (
     <>
       <Row
@@ -423,7 +463,7 @@ const SubCampaignTable = ({ base64Image }) => {
       </Row>
       <Table
         columns={columns}
-        dataSource={data?.campaigns || []}
+        dataSource={data || []}
         // loading={isLoading}
         // onChange={onChange}
         pagination={false}

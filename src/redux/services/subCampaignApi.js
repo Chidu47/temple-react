@@ -27,7 +27,7 @@ export const subCampaignApi = createApi({
         method: "POST",
         body: body,
       }),
-      invalidatesTags: ["subCampaign"],
+      invalidatesTags: ["subCampaign", "campaign"],
     }),
     updateSubCampaign: builder.mutation({
       query: (body) => ({
@@ -41,8 +41,8 @@ export const subCampaignApi = createApi({
 });
 
 export const {
-  useGetAllSubCampaignQuery,
-  useGetSubCampaignQuery,
-  useCreateSubCampaignMutation,
-  useUpdateSubCampaignMutation,
+  // useGetAllSubCampaignQuery,
+  // useGetSubCampaignQuery,
+  // useCreateSubCampaignMutation,
+  // useUpdateSubCampaignMutation,
 } = subCampaignApi;
