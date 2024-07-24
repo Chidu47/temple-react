@@ -25,7 +25,7 @@ export const subCampaignApi = createApi({
       query: (body) => ({
         url: "subDonation/create",
         method: "POST",
-        body,
+        body: body,
       }),
       invalidatesTags: ["subCampaign"],
     }),

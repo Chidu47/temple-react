@@ -7,7 +7,7 @@ export const CAMPAIGN_API = "campaignApi";
 export const campaignApi = createApi({
   reducerPath: CAMPAIGN_API,
   baseQuery: apiBaseQuery,
-  tagTypes: ["campaign", "login"],
+  tagTypes: ["campaign", "login", "users"],
   endpoints: (builder) => ({
     getAllCampaign: builder.query({
       query: () => ({
@@ -17,7 +17,7 @@ export const campaignApi = createApi({
     }),
     getCampaign: builder.query({
       query: (id) => ({
-        url: `get-by-id/${id}`,
+        url: `donation_campaign/get-by-id/${id}`,
       }),
       providesTags: ["campaign"],
     }),
@@ -53,6 +53,12 @@ export const campaignApi = createApi({
       }),
       invalidatesTags: ["login"],
     }),
+    getAllUser: builder.query({
+      query: () => ({
+        url: "/users/get-all-users",
+      }),
+      providesTags: ["users"],
+    }),
   }),
 });
 
@@ -63,4 +69,5 @@ export const {
   useUpdateCampaignMutation,
   useSentOtpMutation,
   useVerifyOtpMutation,
+  useGetAllUserQuery,
 } = campaignApi;

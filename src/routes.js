@@ -39,6 +39,11 @@ export const protectedRoutes = [
     exact: true,
     element: lazy(() => import("./pages/campaigns/campaign-form")),
   },
+  {
+    path: "/users",
+    exact: true,
+    element: lazy(() => import("./pages/users")),
+  },
 
   //users
 ];

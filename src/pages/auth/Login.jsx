@@ -1,37 +1,25 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Alert, Button, Col, Form, Image, Input, Row, Typography } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { useLoginMutation } from "../../redux/services/auth";
-import { setAccessToken } from "../../redux/slices/authSlice";
 // import { AuthContext } from "../../providers/AuthProvider";
-import { usersApi } from "../../redux/services/users";
 
 const Login = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  // const { isAuthenticated } = useContext(AuthContext);
-  const [login, { data: loginData, isLoading, isSuccess, isError }] =
-    useLoginMutation();
+
+  const [error, setError] = useState(false);
 
   const onFinish = async (values) => {
-    // console.log("Received values of form: ", values);
-    await login(values);
-  };
+    const validUser =
+      values?.email === "admin@admin.com" && values?.password === "admin123";
 
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     navigate("/", { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate]);
-
-  useEffect(() => {
-    if (isSuccess && loginData?.data?.access_token) {
-      dispatch(setAccessToken(loginData?.data?.access_token));
-      dispatch(usersApi.endpoints.getMe.initiate());
-      navigate("/", { replace: true });
+    if (validUser) {
+      sessionStorage.setItem("auth", true);
+      navigate("/campaigns");
+    } else {
+      setError(true);
     }
-  }, [isSuccess, loginData, dispatch, navigate]);
+  };
 
   return (
     <Row justify={"center"} align="stretch" style={{ height: "100vh" }}>
@@ -94,7 +82,7 @@ const Login = () => {
                       />
                     </Form.Item>
 
-                    {isError && (
+                    {error && (
                       <Form.Item style={{ color: "red", marginTop: "-15px" }}>
                         <Alert
                           message="Invalid Credentials"
@@ -110,19 +98,19 @@ const Login = () => {
                         block
                         type="primary"
                         htmlType="submit"
-                        loading={isLoading}
+                        // loading={isLoading}
                       >
                         Log in
                       </Button>
 
-                      <Link className="login-form-forgot" to="/forgot-password">
+                      {/* <Link className="login-form-forgot" to="/forgot-password">
                         <Typography.Paragraph
                           style={{ textAlign: "center", marginTop: "10px" }}
                           type="secondary"
                         >
                           Forgot your password ?
                         </Typography.Paragraph>
-                      </Link>
+                      </Link> */}
                     </Form.Item>
                   </Col>
                 </Row>

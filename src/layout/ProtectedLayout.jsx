@@ -15,12 +15,12 @@ const ProtectedLayout = () => {
   } = theme.useToken();
 
   const navigate = useNavigate();
-  // const { isAuthenticated } = useContext(AuthContext);
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate("/login", { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("auth")) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
 
   return (
     <Layout>

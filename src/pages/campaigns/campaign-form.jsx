@@ -26,6 +26,7 @@ import {
   Card,
   DatePicker,
   Flex,
+  Image,
   Modal,
   Pagination,
   Row,
@@ -65,7 +66,7 @@ const CampaignForm = () => {
   }, [router, isSuccess]);
 
   const form = useFormik({
-    initialValues: {},
+    initialValues: singleCampaign ? singleCampaign?.data?.campaign : {},
     enableReinitialize: true,
 
     validationSchema: Yup.object().shape({
@@ -101,6 +102,7 @@ const CampaignForm = () => {
               <TextField
                 size="medium"
                 type="file"
+                autoFocus
                 variant="standard"
                 name="featured_image_base_url"
                 label="Select Image"
@@ -115,8 +117,17 @@ const CampaignForm = () => {
                 }
               />
             </Grid>
+            <Grid item xs={6}>
+              <Image
+                src={form.values?.featured_image_base_url}
+                height={80}
+                width={100}
+                style={{ objectFit: "contain" }}
+              />
+            </Grid>
             <Grid item xs={12}>
               <TextField
+                focused={form.values?.temple_name}
                 size="medium"
                 name="temple_name"
                 label="Temple Name"
@@ -130,6 +141,7 @@ const CampaignForm = () => {
             </Grid>
             <Grid item xs={6}>
               <TextField
+                focused={form.values?.trust}
                 size="medium"
                 name="trust"
                 label="Trust"
@@ -142,6 +154,7 @@ const CampaignForm = () => {
             <Grid item xs={6}>
               <TextField
                 size="medium"
+                focused={form.values?.campaign_name}
                 name="campaign_name"
                 label="Campaign Name"
                 fullWidth
@@ -157,6 +170,7 @@ const CampaignForm = () => {
               <TextField
                 minRows={3}
                 multiline
+                focused={form.values?.description}
                 size="medium"
                 name="description"
                 label="Description"
@@ -173,6 +187,7 @@ const CampaignForm = () => {
                 minRows={3}
                 multiline
                 size="medium"
+                focused={form.values?.about}
                 name="about"
                 label="About"
                 fullWidth
@@ -184,6 +199,7 @@ const CampaignForm = () => {
             <Grid item xs={12}>
               <TextField
                 size="medium"
+                focused={form.values?.location}
                 name="location"
                 label="Location"
                 fullWidth
@@ -195,6 +211,7 @@ const CampaignForm = () => {
             <Grid item xs={12}>
               <TextField
                 size="medium"
+                focused={form.values?.event}
                 name="event"
                 label="Event"
                 fullWidth
@@ -206,6 +223,7 @@ const CampaignForm = () => {
             <Grid item xs={6}>
               <TextField
                 size="medium"
+                focused={form.values?.minimum_amount}
                 name="minimum_amount"
                 label="Minimum amount"
                 fullWidth
@@ -222,6 +240,7 @@ const CampaignForm = () => {
                 name="target_amount"
                 label="Target amount"
                 fullWidth
+                focused={form.values?.target_amount}
                 value={form.values?.target_amount}
                 error={form.errors?.target_amount}
                 onChange={(e) =>
@@ -464,10 +483,18 @@ const SubDonationForm = ({
       if (subCampaignId) {
         // await updateSubCampaign({ ...values, featured_image: image });
       } else {
+        const payload = new FormData();
+        payload.append("name", values.name);
+        payload.append("amount", values.amount);
+        payload.append("description", values.description);
+        payload.append("featured_image", values?.featured_image);
+        payload.append("campaign_id", +campaignId);
+
+        // await createSubDomain(payload);
         await createSubDomain({
           ...values,
           featured_image: image,
-          campaign_id: campaignId,
+          campaign_id: +campaignId,
         });
       }
     },
@@ -518,7 +545,7 @@ const SubDonationForm = ({
               onChange={(e) => form.setFieldValue("amount", e.target.value)}
             />
           </Grid>
-          {/* <Grid item xs={12}>
+          <Grid item xs={12}>
             <TextField
               minRows={3}
               multiline
@@ -532,7 +559,7 @@ const SubDonationForm = ({
                 form.setFieldValue("description", e.target.value)
               }
             />
-          </Grid> */}
+          </Grid>
         </Grid>
         <Stack
           direction="row"
