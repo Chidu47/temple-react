@@ -2,6 +2,7 @@ import { DeleteOutlined, EditTwoTone } from "@ant-design/icons";
 import {
   Button,
   Flex,
+  message,
   Pagination,
   Popconfirm,
   Row,
@@ -12,7 +13,11 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PrimaryWrapper from "../../components/PrimaryWrapper";
-import { useGetAllEnquiriesQuery } from "../../redux/services/campaignApi";
+import {
+  useDeleteEnquiryMutation,
+  useGetAllEnquiriesQuery,
+} from "../../redux/services/campaignApi";
+import { useEffect } from "react";
 
 const Users = () => {
   const navigate = useNavigate();
@@ -20,6 +25,20 @@ const Users = () => {
   const page = searchParams.get("page") || 1;
 
   const { data, isLoading: loadingUsers } = useGetAllEnquiriesQuery({ page });
+  const [deleteRecord, { isLoading: deleting, isSuccess, isError }] =
+    useDeleteEnquiryMutation();
+
+  useEffect(() => {
+    if (isSuccess) {
+      message.success("Record deleted successfully");
+    }
+
+    if (isError) {
+      message.error("Something went wrong");
+    }
+
+    return () => {};
+  }, [isSuccess, isError]);
 
   const columns = [
     {
@@ -47,6 +66,26 @@ const Users = () => {
       title: "Trust",
       dataIndex: "trust",
     },
+    {
+      title: "Action",
+      dataIndex: "id",
+      fixed: "right",
+      width: 100,
+      render: (record) => (
+        <Space>
+          <Popconfirm
+            title="Are you sure to delete this?"
+            onConfirm={() => deleteRecord(record)}
+            okText="Yes"
+            okButtonProps={{ loading: deleting }}
+            placement="topLeft"
+            cancelText="No"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
+        </Space>
+      ),
+    },
   ];
 
   const onChange = (page) => {
@@ -66,7 +105,7 @@ const Users = () => {
       </Row>
       <Table
         columns={columns}
-        dataSource={data || []}
+        dataSource={data?.enquiries || []}
         loading={loadingUsers}
         onChange={onChange}
         pagination={false}

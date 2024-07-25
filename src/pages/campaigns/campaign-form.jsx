@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import {
   useCreateCampaignMutation,
   useCreateSubCampaignMutation,
+  useDeleteSubCampaignMutation,
   useGetAllCampaignQuery,
   useGetCampaignQuery,
   useUpdateCampaignMutation,
@@ -28,16 +29,19 @@ import {
   DatePicker,
   Flex,
   Image,
+  message,
   Modal,
   Pagination,
+  Popconfirm,
   Row,
+  Space,
   Table,
   Typography,
   Upload,
 } from "antd";
 import PrimaryWrapper from "../../components/PrimaryWrapper";
 
-import { UploadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import moment from "moment";
 
 const CampaignForm = () => {
@@ -63,6 +67,7 @@ const CampaignForm = () => {
 
   useEffect(() => {
     if (isSuccess) {
+      message.success("Campaign created successfully");
       router("/campaigns");
     }
 
@@ -411,6 +416,8 @@ export default CampaignForm;
 const SubCampaignTable = ({ base64Image, data }) => {
   const [subCampaignId, setSubCampaignId] = useState(null);
   const [subCampaignModel, setSubCampaignModel] = useState(null);
+  const [deleteRecord, { isLoading: deleting }] =
+    useDeleteSubCampaignMutation();
 
   const columns = [
     {
@@ -441,6 +448,26 @@ const SubCampaignTable = ({ base64Image, data }) => {
       width: 150,
       sortable: false,
       render: (record) => moment(record).calendar(),
+    },
+    {
+      title: "Action",
+      dataIndex: "id",
+      fixed: "right",
+      width: 100,
+      render: (record) => (
+        <Space>
+          <Popconfirm
+            title="Are you sure to delete this?"
+            onConfirm={() => deleteRecord(record)}
+            okText="Yes"
+            okButtonProps={{ loading: deleting }}
+            placement="topLeft"
+            cancelText="No"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
@@ -502,6 +529,7 @@ const SubDonationForm = ({
     useCreateSubCampaignMutation();
   useEffect(() => {
     if (isSuccess) {
+      message.success("Sub Campaign created successfully");
       onClose();
       reset();
     }

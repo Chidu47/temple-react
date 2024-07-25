@@ -37,6 +37,13 @@ export const campaignApi = createApi({
       }),
       invalidatesTags: ["campaign"],
     }),
+    deleteCampaign: builder.mutation({
+      query: (id) => ({
+        url: `donation_campaign/delete/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["campaign"],
+    }),
     sentOtp: builder.mutation({
       query: (body) => ({
         url: "/users/sendOtp",
@@ -87,6 +94,20 @@ export const campaignApi = createApi({
       }),
       invalidatesTags: ["campaign"],
     }),
+    deleteSubCampaign: builder.mutation({
+      query: (id) => ({
+        url: `subDonation/delete/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["campaign"],
+    }),
+    deleteEnquiry: builder.mutation({
+      query: (id) => ({
+        url: `enquiry/delete/${id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["campaign"],
+    }),
     getAllEnquiries: builder.query({
       query: () => ({
         url: "enquiry/list",
@@ -109,4 +130,7 @@ export const {
   useCreateSubCampaignMutation,
   useUpdateSubCampaignMutation,
   useGetAllEnquiriesQuery,
+  useDeleteCampaignMutation,
+  useDeleteSubCampaignMutation,
+  useDeleteEnquiryMutation,
 } = campaignApi;

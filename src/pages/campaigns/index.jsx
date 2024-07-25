@@ -1,19 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PrimaryWrapper from "../../components/PrimaryWrapper";
 import {
   Button,
   Flex,
+  message,
   Pagination,
+  Popconfirm,
   // Popconfirm,
   Row,
+  Space,
   Table,
   Typography,
 } from "antd";
 // import { useDeleteOrganizationMutation } from "../../../redux/services/organizations";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { useGetAllCampaignQuery } from "../../redux/services/campaignApi";
+import {
+  useDeleteCampaignMutation,
+  useGetAllCampaignQuery,
+} from "../../redux/services/campaignApi";
 import moment from "moment";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const DeviceLinkRequest = () => {
   const navigate = useNavigate();
@@ -21,6 +28,21 @@ const DeviceLinkRequest = () => {
   const page = searchParams.get("page") || 1;
 
   const { data, isLoading } = useGetAllCampaignQuery();
+  const [deleteRecord, { isLoading: deleting, isSuccess, isError }] =
+    useDeleteCampaignMutation();
+
+  useEffect(() => {
+    if (isSuccess) {
+      message.success("Record deleted successfully");
+    }
+
+    if (isError) {
+      message.error("Something went wrong");
+    }
+
+    return () => {};
+  }, [isSuccess, isError]);
+
   const columns = [
     {
       dataIndex: "id",
@@ -64,6 +86,26 @@ const DeviceLinkRequest = () => {
       width: 150,
       sortable: false,
       render: (record) => moment(record).calendar(),
+    },
+    {
+      title: "Action",
+      dataIndex: "id",
+      fixed: "right",
+      width: 100,
+      render: (record) => (
+        <Space>
+          <Popconfirm
+            title="Are you sure to delete this?"
+            onConfirm={() => deleteRecord(record)}
+            okText="Yes"
+            okButtonProps={{ loading: deleting }}
+            placement="topLeft"
+            cancelText="No"
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
