@@ -31,26 +31,26 @@ const Users = () => {
       title: "Phone Number",
       dataIndex: "mobile_number",
     },
-    {
-      title: "Action",
-      dataIndex: "id",
-      fixed: "right",
-      width: 100,
-      render: (record) => (
-        <Space>
-          <Popconfirm
-            title="Are you sure to delete this?"
-            onConfirm={() => deleteRecord(record)}
-            okText="Yes"
-            okButtonProps={{ loading: deleting }}
-            placement="topLeft"
-            cancelText="No"
-          >
-            <Button icon={<DeleteOutlined />} danger />
-          </Popconfirm>
-        </Space>
-      ),
-    },
+    // {
+    //   title: "Action",
+    //   dataIndex: "id",
+    //   fixed: "right",
+    //   width: 100,
+    //   render: (record) => (
+    //     <Space>
+    //       <Popconfirm
+    //         title="Are you sure to delete this?"
+    //         onConfirm={() => deleteRecord(record)}
+    //         okText="Yes"
+    //         okButtonProps={{ loading: deleting }}
+    //         placement="topLeft"
+    //         cancelText="No"
+    //       >
+    //         <Button icon={<DeleteOutlined />} danger />
+    //       </Popconfirm>
+    //     </Space>
+    //   ),
+    // },
   ];
 
   const onChange = (page) => {
