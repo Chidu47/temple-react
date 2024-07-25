@@ -41,7 +41,11 @@ import {
 } from "antd";
 import PrimaryWrapper from "../../components/PrimaryWrapper";
 
-import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import moment from "moment";
 
 const CampaignForm = () => {
@@ -60,19 +64,29 @@ const CampaignForm = () => {
     skip: !campaignId,
   });
 
-  const [CreateCampaign, { isLoading: creating, isSuccess }] =
-    useCreateCampaignMutation();
+  const [
+    CreateCampaign,
+    { isLoading: creating, isSuccess, isError: createError },
+  ] = useCreateCampaignMutation();
 
-  const [updateCampaign, { isLoading: updating }] = useUpdateCampaignMutation();
+  const [updateCampaign, { isLoading: updating, isError, isSuccess: updated }] =
+    useUpdateCampaignMutation();
 
   useEffect(() => {
     if (isSuccess) {
       message.success("Campaign created successfully");
       router("/campaigns");
     }
+    if (updated) {
+      message.success("Campaign Updated successfully");
+      router("/campaigns");
+    }
+    if (isError || createError) {
+      message.error("Something went wrong");
+    }
 
     return () => {};
-  }, [router, isSuccess]);
+  }, [router, isSuccess, isError, createError, updated]);
 
   const form = useFormik({
     initialValues: singleCampaign ? singleCampaign?.data?.campaign : {},
@@ -85,11 +99,28 @@ const CampaignForm = () => {
     }),
 
     onSubmit: async (values) => {
-      const image = await base64Image(values.featured_image_base_url);
-
       if (campaignId) {
-        await updateCampaign({ ...values, featured_image_base_url: image });
+        const { featured_image_base_url, ...rest } = values;
+        console.log(featured_image_base_url);
+        if (featured_image_base_url?.name) {
+          const image = await base64Image(values.featured_image_base_url);
+          await updateCampaign({
+            id: campaignId,
+            body: { ...rest, featured_image_base_url: image },
+          });
+        } else {
+          await updateCampaign({
+            id: campaignId,
+            body: { ...rest },
+          });
+        }
+
+        // await updateCampaign({
+        //   id: campaignId,
+        //   body: { ...values, featured_image_base_url: image },
+        // });
       } else {
+        const image = await base64Image(values.featured_image_base_url);
         await CreateCampaign({ ...values, featured_image_base_url: image });
       }
     },
@@ -129,13 +160,18 @@ const CampaignForm = () => {
               /> */}
               <Upload
                 multiple={false}
-                onChange={(e) => {
+                customRequest={(e) => {
                   console.log(e.file);
-                  form.setFieldValue(
-                    "featured_image_base_url",
-                    e.file.originFileObj
-                  );
+                  form.setFieldValue("featured_image_base_url", e.file);
                 }}
+                // onChange={(e) => {
+                //   console.log(e.file);
+                //   form.setFieldValue(
+                //     "featured_image_base_url",
+                //     e.file.originFileObj
+                //   );
+                // }}
+
                 // fileList={false}
                 showUploadList={false}
               >
@@ -336,7 +372,7 @@ const CampaignForm = () => {
                   <Checkbox
                     size="medium"
                     name="is_active"
-                    value={form.values?.is_active}
+                    checked={Boolean(form.values?.is_active)}
                     error={form.errors?.is_active}
                     onChange={(e) =>
                       form.setFieldValue("is_active", e.target.checked)
@@ -352,7 +388,7 @@ const CampaignForm = () => {
                   <Checkbox
                     size="medium"
                     name="is_expired"
-                    value={form.values?.is_expired}
+                    checked={Boolean(form.values?.is_expired)}
                     error={form.errors?.is_expired}
                     onChange={(e) =>
                       form.setFieldValue("is_expired", e.target.checked)
@@ -368,7 +404,7 @@ const CampaignForm = () => {
                   <Checkbox
                     size="medium"
                     name="is_published"
-                    value={form.values?.is_published}
+                    checked={Boolean(form.values?.is_published)}
                     error={form.errors?.is_published}
                     onChange={(e) =>
                       form.setFieldValue("is_published", e.target.checked)
@@ -389,7 +425,7 @@ const CampaignForm = () => {
             <Button variant="outlined" color="primary" size="large">
               Cancel
             </Button>
-            <Button variant="contained" onClick={form.handleSubmit}>
+            <Button type="primary" onClick={form.handleSubmit}>
               {creating || updating ? (
                 <CircularProgress size={18} color="inherit" />
               ) : campaignId ? (
@@ -418,6 +454,8 @@ const SubCampaignTable = ({ base64Image, data }) => {
   const [subCampaignModel, setSubCampaignModel] = useState(null);
   const [deleteRecord, { isLoading: deleting }] =
     useDeleteSubCampaignMutation();
+  // const [updateRecord, { isLoading: updating }] =
+  //   useDeleteSubCampaignMutation();
 
   const columns = [
     {
@@ -456,6 +494,13 @@ const SubCampaignTable = ({ base64Image, data }) => {
       width: 100,
       render: (record) => (
         <Space>
+          <Button
+            onClick={() => {
+              setSubCampaignId(record);
+              setSubCampaignModel(true);
+            }}
+            icon={<EditOutlined />}
+          />
           <Popconfirm
             title="Are you sure to delete this?"
             onConfirm={() => deleteRecord(record)}

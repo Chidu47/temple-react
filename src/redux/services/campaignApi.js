@@ -30,8 +30,8 @@ export const campaignApi = createApi({
       invalidatesTags: ["campaign"],
     }),
     updateCampaign: builder.mutation({
-      query: (body) => ({
-        url: "donation_campaign/update",
+      query: ({ id, body }) => ({
+        url: `donation_campaign/update/${id}`,
         method: "POST",
         body,
       }),
@@ -87,8 +87,8 @@ export const campaignApi = createApi({
       invalidatesTags: ["campaign"],
     }),
     updateSubCampaign: builder.mutation({
-      query: (body) => ({
-        url: "subDonation/add",
+      query: ({ id, body }) => ({
+        url: `subDonation/update/${id}`,
         method: "POST",
         body,
       }),
@@ -96,7 +96,7 @@ export const campaignApi = createApi({
     }),
     deleteSubCampaign: builder.mutation({
       query: (id) => ({
-        url: `subDonation/delete/${id}`,
+        url: `/subDonation/delete/${id}`,
         method: "POST",
       }),
       invalidatesTags: ["campaign"],
