@@ -31,7 +31,7 @@ export const campaignApi = createApi({
     }),
     updateCampaign: builder.mutation({
       query: ({ id, body }) => ({
-        url: `donation_campaign/update/${id}`,
+        url: `donation_campaign/update`,
         method: "POST",
         body,
       }),

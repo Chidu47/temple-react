@@ -60,7 +60,7 @@ const CampaignForm = () => {
     });
   };
 
-  const { data: singleCampaign } = useGetCampaignQuery(campaignId, {
+  const { data: singleCampaign, isLoading } = useGetCampaignQuery(campaignId, {
     skip: !campaignId,
   });
 
@@ -106,7 +106,7 @@ const CampaignForm = () => {
           const image = await base64Image(values.featured_image_base_url);
           await updateCampaign({
             id: campaignId,
-            body: { ...rest, featured_image_base_url: image },
+            body: { ...rest, featured_image_base_url: image, id: campaignId },
           });
         } else {
           await updateCampaign({
@@ -134,7 +134,7 @@ const CampaignForm = () => {
       >
         {campaignId ? "Update Campaign" : "Create Campaign"}{" "}
       </Typography.Title>
-      <Card className="flex flex-col space-y-7 py-8  px-16">
+      <Card loading={isLoading} className="flex flex-col space-y-7 py-8  px-16">
         <div className="pb-10" sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -327,11 +327,11 @@ const CampaignForm = () => {
               />
             </Grid>
 
-            <Grid item xs={3}>
+            <Grid item xs={2}>
               <DatePicker
                 size="medium"
                 name="start_date"
-                label="Start Date"
+                placeholder="Start Date"
                 fullWidth
                 value={
                   form.values?.start_date
@@ -348,11 +348,11 @@ const CampaignForm = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
               <DatePicker
                 size="medium"
                 name="end_date"
-                label="End Date"
+                placeholder="End Date"
                 fullWidth
                 value={
                   form.values?.end_date ? dayjs(form.values?.end_date) : null
@@ -361,6 +361,26 @@ const CampaignForm = () => {
                 onChange={(value) =>
                   form.setFieldValue(
                     "end_date",
+                    dayjs(value).format("YYYY-MM-DD")
+                  )
+                }
+              />
+            </Grid>
+            <Grid item xs={2}>
+              <DatePicker
+                size="medium"
+                name="expiry_date"
+                placeholder="Expired Date"
+                fullWidth
+                value={
+                  form.values?.expiry_date
+                    ? dayjs(form.values?.expiry_date)
+                    : null
+                }
+                error={form.errors?.expiry_date}
+                onChange={(value) =>
+                  form.setFieldValue(
+                    "expiry_date",
                     dayjs(value).format("YYYY-MM-DD")
                   )
                 }
@@ -494,13 +514,13 @@ const SubCampaignTable = ({ base64Image, data }) => {
       width: 100,
       render: (record) => (
         <Space>
-          <Button
+          {/* <Button
             onClick={() => {
               setSubCampaignId(record);
               setSubCampaignModel(true);
             }}
             icon={<EditOutlined />}
-          />
+          /> */}
           <Popconfirm
             title="Are you sure to delete this?"
             onConfirm={() => deleteRecord(record)}
