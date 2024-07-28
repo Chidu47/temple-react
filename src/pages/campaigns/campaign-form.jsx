@@ -21,6 +21,7 @@ import {
   useGetAllCampaignQuery,
   useGetCampaignQuery,
   useUpdateCampaignMutation,
+  useUpdateSubCampaignMutation,
 } from "../../redux/services/campaignApi";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -470,7 +471,7 @@ const CampaignForm = () => {
 export default CampaignForm;
 
 const SubCampaignTable = ({ base64Image, data }) => {
-  const [subCampaignId, setSubCampaignId] = useState(null);
+  const [subCampaign, setSubCampaign] = useState(null);
   const [subCampaignModel, setSubCampaignModel] = useState(null);
   const [deleteRecord, { isLoading: deleting }] =
     useDeleteSubCampaignMutation();
@@ -512,15 +513,15 @@ const SubCampaignTable = ({ base64Image, data }) => {
       dataIndex: "id",
       fixed: "right",
       width: 100,
-      render: (record) => (
+      render: (record, item) => (
         <Space>
-          {/* <Button
+          <Button
             onClick={() => {
-              setSubCampaignId(record);
+              setSubCampaign(item);
               setSubCampaignModel(true);
             }}
             icon={<EditOutlined />}
-          /> */}
+          />
           <Popconfirm
             title="Are you sure to delete this?"
             onConfirm={() => deleteRecord(record)}
@@ -575,8 +576,11 @@ const SubCampaignTable = ({ base64Image, data }) => {
       <SubDonationForm
         open={subCampaignModel}
         base64Image={base64Image}
-        onClose={() => setSubCampaignModel(false)}
-        subCampaignId={subCampaignId}
+        onClose={() => {
+          setSubCampaign(null);
+          setSubCampaignModel(false);
+        }}
+        subCampaign={subCampaign}
       />
     </>
   );
@@ -586,44 +590,70 @@ const SubDonationForm = ({
   open,
   onClose,
   base64Image,
-  subCampaignId,
+  subCampaign,
   campaign_id,
 }) => {
   const { campaignId } = useParams();
-  const [createSubDomain, { isLoading: creating, isSuccess, reset }] =
+  const [createSubDomain, { isLoading: creating, isSuccess, isError, reset }] =
     useCreateSubCampaignMutation();
+  const [
+    updateSubCampaign,
+    {
+      isLoading: updating,
+      isSuccess: updated,
+      reset: resetUpdate,
+      isError: updateError,
+    },
+  ] = useUpdateSubCampaignMutation();
+
   useEffect(() => {
     if (isSuccess) {
       message.success("Sub Campaign created successfully");
       onClose();
       reset();
     }
+    if (updated) {
+      message.success("Sub Campaign Updated successfully");
+      onClose();
+      resetUpdate();
+    }
+    if (isError || updateError) {
+      message.error("Something went wrong");
+      reset();
+      resetUpdate();
+    }
 
     return () => {};
-  }, [isSuccess, reset, onClose]);
+  }, [isSuccess, reset, onClose, updated, resetUpdate, isError, updateError]);
 
   const form = useFormik({
-    initialValues: {},
-    // validationSchema: Yup.object({
-    //   name: Yup.string().required("Name is required"),
-    //   amount: Yup.string().required("Amount is required"),
-    //   description: Yup.string().required("Description is required"),
-    // }),
+    initialValues: subCampaign ? { ...subCampaign } : {},
+
+    enableReinitialize: true,
 
     onSubmit: async (values) => {
-      const image = await base64Image(values.featured_image);
+      if (subCampaign?.id) {
+        const { featured_image, ...rest } = values;
 
-      if (subCampaignId) {
-        // await updateSubCampaign({ ...values, featured_image: image });
+        if (featured_image?.name) {
+          const image = await base64Image(values.featured_image);
+          await updateSubCampaign({
+            id: subCampaign?.id,
+            body: { ...rest, featured_image: image, campaign_id: campaignId },
+          });
+        } else {
+          await updateSubCampaign({
+            id: subCampaign?.id,
+            body: { ...rest, campaign_id: campaignId },
+          });
+        }
+
+        // await updateCampaign({
+        //   id: campaignId,
+        //   body: { ...values, featured_image_base_url: image },
+        // });
       } else {
-        const payload = new FormData();
-        payload.append("name", values.name);
-        payload.append("amount", values.amount);
-        payload.append("description", values.description);
-        payload.append("featured_image", values?.featured_image);
-        payload.append("campaign_id", +campaignId);
-
-        // await createSubDomain(payload);
+        const image = await base64Image(values.featured_image);
         await createSubDomain({
           ...values,
           featured_image: image,
@@ -632,6 +662,7 @@ const SubDonationForm = ({
       }
     },
   });
+  console.log(form.values);
 
   return (
     <Modal open={open} onCancel={onClose} width={800} footer={null}>
@@ -640,18 +671,63 @@ const SubDonationForm = ({
 
         {/* <div className="pb-10"> */}
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
+            <Upload
+              multiple={false}
+              customRequest={(e) => {
+                console.log(e.file);
+                form.setFieldValue("featured_image", e.file);
+              }}
+              // onChange={(e) => {
+              //   console.log(e.file);
+              //   form.setFieldValue(
+              //     "featured_image",
+              //     e.file.originFileObj
+              //   );
+              // }}
+
+              // fileList={false}
+              showUploadList={false}
+            >
+              <Button variant="outlined" icon={<UploadOutlined />}>
+                Click to Upload
+              </Button>
+            </Upload>
+          </Grid>
+          <Grid item xs={6}>
+            {typeof form.values?.featured_image === "string" && (
+              <Image
+                src={form.values?.featured_image}
+                height={80}
+                width={100}
+                style={{ objectFit: "contain" }}
+              />
+            )}
+            {typeof form.values?.featured_image === "object" && (
+              <Image
+                src={
+                  form.values?.featured_image &&
+                  window.URL.createObjectURL(form.values.featured_image)
+                }
+                height={80}
+                width={100}
+                style={{ objectFit: "contain" }}
+              />
+            )}
+          </Grid>
+          <Grid item xs={6}>
             <TextField
+              focused={form.values?.name}
               size="medium"
               name="name"
               label="Name"
               fullWidth
-              value={form.values?.name}
+              value={form.values?.name || ""}
               error={form.errors?.name}
               onChange={(e) => form.setFieldValue("name", e.target.value)}
             />
           </Grid>
-          <Grid item xs={6}>
+          {/* <Grid item xs={6}>
             <TextField
               size="medium"
               type="file"
@@ -665,15 +741,16 @@ const SubDonationForm = ({
                 form.setFieldValue("featured_image", e.target.files?.[0])
               }
             />
-          </Grid>
+          </Grid> */}
 
           <Grid item xs={6}>
             <TextField
+              focused={form.values?.amount}
               size="medium"
               name="amount"
               label="Amount"
               fullWidth
-              value={form.values?.amount}
+              value={form.values?.amount || ""}
               error={form.errors?.amount}
               onChange={(e) => form.setFieldValue("amount", e.target.value)}
             />
@@ -681,12 +758,13 @@ const SubDonationForm = ({
           <Grid item xs={12}>
             <TextField
               minRows={3}
+              focused={form.values?.description}
               multiline
               size="medium"
               name="description"
               label="Description"
               fullWidth
-              value={form.values?.description}
+              value={form.values?.description || ""}
               error={form.errors?.description}
               onChange={(e) =>
                 form.setFieldValue("description", e.target.value)
@@ -709,14 +787,12 @@ const SubDonationForm = ({
           >
             Cancel
           </Button>
-          <Button variant="contained" onClick={form.handleSubmit}>
-            {creating ? (
-              <CircularProgress size={18} color="inherit" />
-            ) : subCampaignId ? (
-              "Update"
-            ) : (
-              "Create"
-            )}
+          <Button
+            variant="contained"
+            loading={creating || updating}
+            onClick={form.handleSubmit}
+          >
+            {subCampaign?.id ? "Update" : "Create"}
           </Button>
         </Stack>
         {/* </div> */}
